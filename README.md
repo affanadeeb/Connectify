@@ -105,6 +105,97 @@ npm start
 
 The application will be available at `http://localhost:3000`
 
+# How to Run as Localhost
+
+This guide explains how to set up and run the project on your local machine.
+
+## Prerequisites
+- **MongoDB** installed and running.
+- **Node.js** and **npm** installed.
+- **Visual Studio Code (VSCode)** or any other terminal.
+
+---
+
+## Steps to Run
+
+### 1. Set Up MongoDB
+Ensure MongoDB is installed and running on your system. Use the following command to check its status:
+
+```bash
+sudo systemctl status mongod
+```
+
+If MongoDB is not running, start it with:
+
+```bash
+sudo systemctl start mongod
+```
+
+---
+
+### 2. Set Up the Frontend
+
+1. Open a terminal in VSCode.
+2. Navigate to the frontend directory:
+   
+   ```bash
+   cd frontend
+   ```
+
+3. Install dependencies (if `node_modules` are not already installed):
+
+   ```bash
+   npm install
+   ```
+
+4. Start the frontend server:
+
+   ```bash
+   npm start
+   ```
+
+---
+
+### 3. Set Up the Backend
+
+1. Open another terminal in VSCode.
+2. Navigate to the backend directory:
+   
+   ```bash
+   cd backend
+   ```
+
+3. Install dependencies (if `node_modules` are not already installed):
+
+   ```bash
+   npm install
+   ```
+
+4. Start the backend server:
+
+   ```bash
+   npm start
+   ```
+
+---
+
+### 4. Access the Application
+After both the frontend and backend servers are running, open your web browser and navigate to:
+
+```
+http://localhost:3000
+```
+
+The frontend should now be accessible, and it will communicate with the backend through the configured API routes.
+
+---
+
+## Troubleshooting
+- Ensure MongoDB is running if you encounter connection issues.
+- Verify that the required ports (e.g., `3000` for frontend, `5000` or similar for backend) are not blocked.
+- Check for error messages in the terminal and resolve missing dependencies by re-running `npm install` in the respective directories.
+
+
 ## API Endpoints
 
 ### Authentication

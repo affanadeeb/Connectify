@@ -132,11 +132,7 @@ The application is configured for deployment on:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details
-
 ## Acknowledgments
 * Google Translate API for translation services
 * Hugging Face for AI-powered text summarization
 * React Icons for the icon library
-```

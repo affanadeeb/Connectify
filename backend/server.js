@@ -4,95 +4,70 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const multer = require('multer');
 const path = require('path');
-const Post = require('./models/Post');
-const authRoutes = require('./routes/auth');
-const postRoutes = require('./routes/posts');
 
 const app = express();
-
-// Test that the environment variable is loaded
-console.log('API Key loaded:', process.env.RAPIDAPI_KEY ? 'Yes' : 'No');
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something broke!' });
-});
+const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({
-  origin: 'http://localhost:3001',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type']
-}));
-
 app.use(express.json());
-
-// Add this middleware to handle form data
-app.use(express.urlencoded({ extended: true }));
-
-// Create uploads directory if it doesn't exist
-const fs = require('fs');
-if (!fs.existsSync('./uploads')) {
-  fs.mkdirSync('./uploads');
-}
-
-// Session configuration
-app.use(session({
-  secret: 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: 'mongodb://localhost:27017/social-media-app',
-    ttl: 24 * 60 * 60 // 1 day
-  }),
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24, // 24 hours
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
-  }
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? 'https://your-vercel-frontend-url.vercel.app'
+    : 'http://localhost:3000',
+  credentials: true
 }));
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage: storage });
-
-// Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Add this line before mongoose.connect
-mongoose.set('strictQuery', false);
+// Log MongoDB URI (remove in production)
+console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/social-media-app', {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch((err) => {
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  socketTimeoutMS: 45000, // Close sockets after 45s
+})
+.then(() => {
+  console.log('Connected to MongoDB Atlas');
+  
+  // Only start the server after DB connection is established
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+})
+.catch(err => {
   console.error('MongoDB connection error:', err);
   process.exit(1);
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/posts', postRoutes);
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'fallback-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    ttl: 24 * 60 * 60 // 1 day
+  }),
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
+  }
+}));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Serve static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/posts', require('./routes/posts'));
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something broke!', error: err.message });
 });
 
 // Handle uncaught exceptions

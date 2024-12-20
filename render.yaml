@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: connectify-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: RAPIDAPI_KEY
+        value: "668fc5e6cemsh41f16492c1847f7p18037fjsn4c5b8dcf6732"
+      - key: HUGGING_FACE_API_KEY
+        value: "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" 

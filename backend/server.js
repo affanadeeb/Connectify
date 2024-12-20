@@ -14,9 +14,9 @@ app.use(express.json());
 app.use(cors({
   origin: ['https://connectify-ek02rjnyl-affan-shaiks-projects.vercel.app', 'http://localhost:3000'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['set-cookie']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie'],
+  exposedHeaders: ['Set-Cookie']
 }));
 
 // Log MongoDB URI (remove in production)
@@ -64,11 +64,19 @@ app.use(session({
   }),
   cookie: {
     secure: true,
+    httpOnly: true,
     sameSite: 'none',
     maxAge: 24 * 60 * 60 * 1000,
-    domain: '.vercel.app'
-  }
+    path: '/'
+  },
+  name: 'connectify.sid'
 }));
+
+// Add this after your session middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
 
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

@@ -1,6 +1,8 @@
 # Connectify - Social Media Platform
 ![image](https://github.com/user-attachments/assets/359b9184-754e-48ba-bde3-27b07ec2b10f)
 
+![image](https://github.com/user-attachments/assets/e214a051-3cb4-41f6-aeb3-143598ba8274)
+
 ![image](https://github.com/user-attachments/assets/fb174584-a784-4401-af18-135c15b53a0a)
 
 ## Overview

@@ -1,22 +1,30 @@
 import config from '../config';
 
+const makeRequest = async (url, options = {}) => {
+  const defaultOptions = {
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    ...options
+  };
+
+  const response = await fetch(`${config.apiUrl}${url}`, defaultOptions);
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Request failed');
+  }
+
+  return response.json();
+};
+
 export const login = async (credentials) => {
   try {
-    const response = await fetch(`${config.apiUrl}/api/auth/login`, {
+    return await makeRequest('/api/auth/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
       body: JSON.stringify(credentials)
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
-    }
-    
-    return await response.json();
   } catch (error) {
     console.error('Login error:', error);
     throw error;
@@ -25,21 +33,10 @@ export const login = async (credentials) => {
 
 export const register = async (userData) => {
   try {
-    const response = await fetch(`${config.apiUrl}/api/auth/register`, {
+    return await makeRequest('/api/auth/register', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
       body: JSON.stringify(userData)
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Registration failed');
-    }
-    
-    return await response.json();
   } catch (error) {
     console.error('Registration error:', error);
     throw error;
@@ -48,19 +45,9 @@ export const register = async (userData) => {
 
 export const logout = async () => {
   try {
-    const response = await fetch(`${config.apiUrl}/api/auth/logout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include'
+    return await makeRequest('/api/auth/logout', {
+      method: 'POST'
     });
-
-    if (!response.ok) {
-      throw new Error('Logout failed');
-    }
-
-    return await response.json();
   } catch (error) {
     console.error('Logout error:', error);
     throw error;
@@ -69,15 +56,7 @@ export const logout = async () => {
 
 export const checkAuth = async () => {
   try {
-    const response = await fetch(`${config.apiUrl}/api/auth/check`, {
-      credentials: 'include'
-    });
-    
-    if (!response.ok) {
-      throw new Error('Auth check failed');
-    }
-    
-    return await response.json();
+    return await makeRequest('/api/auth/check');
   } catch (error) {
     console.error('Auth check error:', error);
     throw error;

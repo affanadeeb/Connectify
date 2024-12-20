@@ -1,5 +1,11 @@
 const config = {
-  apiUrl: process.env.REACT_APP_API_URL || 'https://connectify-5oe2.onrender.com'
+  apiUrl: 'https://connectify-5oe2.onrender.com',
+  apiConfig: {
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include'  // Important for cookies/sessions
+  }
 };
 
 export default config;

@@ -1,112 +1,99 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const User = require('../models/User');
 
-// Login route
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Set user in session
-    req.session.userId = user._id;
-    req.session.user = {
-      _id: user._id,
-      name: user.name,
-      email: user.email
-    };
-
-    // Send response
-    res.json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login' });
-  }
-});
-
-// Register route
+// Register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-
-    // Check if user exists
-    let user = await User.findOne({ email });
-    if (user) {
+    const { username, email, password } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
     // Create new user
-    user = new User({
-      name,
-      email,
-      password
-    });
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
-
-    // Save user
+    const user = new User({ username, email, password });
     await user.save();
 
-    // Set user in session
+    // Create session
     req.session.userId = user._id;
-    req.session.user = {
+
+    // Send response with user data
+    const userData = {
       _id: user._id,
-      name: user.name,
+      username: user.username,
+      email: user.email
+    };
+    
+    res.status(201).json({ user: userData, message: 'User created successfully' });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Login
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    req.session.userId = user._id;
+    
+    // Send user data without password
+    const userData = {
+      _id: user._id,
+      username: user.username,
       email: user.email
     };
 
-    // Send response
-    res.status(201).json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email
-      }
-    });
+    res.json({ message: 'Logged in successfully', user: userData });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Check auth status
-router.get('/check', (req, res) => {
-  if (req.session.user) {
-    res.json({ user: req.session.user });
-  } else {
-    res.status(401).json({ message: 'Not authenticated' });
-  }
-});
-
-// Logout route
+// Logout
 router.post('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error logging out' });
+  req.session.destroy();
+  res.json({ message: 'Logged out successfully' });
+});
+
+// Add this route to check authentication status
+router.get('/check', async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: 'Not authenticated' });
     }
-    res.clearCookie('connectify.sid');
-    res.json({ message: 'Logged out successfully' });
-  });
+    
+    const user = await User.findById(req.session.userId);
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+    
+    const userData = {
+      _id: user._id,
+      username: user.username,
+      email: user.email
+    };
+    
+    res.json({ user: userData });
+  } catch (error) {
+    console.error('Auth check error:', error);
+    res.status(500).json({ message: error.message });
+  }
 });
 
 module.exports = router; 

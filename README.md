@@ -1,4 +1,7 @@
 # Connectify - Social Media Platform
+![image](https://github.com/user-attachments/assets/359b9184-754e-48ba-bde3-27b07ec2b10f)
+
+![image](https://github.com/user-attachments/assets/fb174584-a784-4401-af18-135c15b53a0a)
 
 ## Overview
 Connectify is a modern social media platform that allows users to connect, share thoughts, and interact with posts through reactions. The platform features real-time translation and text summarization capabilities powered by AI services.

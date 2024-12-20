@@ -21,12 +21,18 @@ app.use(cors({
 // Log MongoDB URI (remove in production)
 console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
 
+// Add this before mongoose.connect
+mongoose.set('strictQuery', false);
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-  socketTimeoutMS: 45000, // Close sockets after 45s
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  retryWrites: true,
+  w: 'majority',
+  ssl: true,
 })
 .then(() => {
   console.log('Connected to MongoDB Atlas');
@@ -38,6 +44,11 @@ mongoose.connect(process.env.MONGODB_URI, {
 })
 .catch(err => {
   console.error('MongoDB connection error:', err);
+  // Log more details about the connection
+  console.log('Connection details:', {
+    uri: process.env.MONGODB_URI ? 'URI is set' : 'URI is missing',
+    env: process.env.NODE_ENV
+  });
   process.exit(1);
 });
 

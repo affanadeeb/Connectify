@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? 'https://your-vercel-frontend-url.vercel.app'
+    ? ['https://connectify-xyz123.vercel.app', 'http://localhost:3000']
     : 'http://localhost:3000',
   credentials: true
 }));
